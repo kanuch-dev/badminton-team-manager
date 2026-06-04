@@ -12,6 +12,19 @@
   --text:#e8f0fe; --text2:#8899bb;
   --green:#00c851; --red:#ff4444; --yellow:#ffbb33;
 }
+[data-theme="light"]{
+  --bg:#f5f7fb; --surface:#ffffff; --surface2:#eef2f7; --border:#d6deea;
+  --accent:#0077ff; --accent2:#ff6b35; --accent3:#16a34a;
+  --text:#1f2937; --text2:#6b7280;
+  --green:#16a34a; --red:#dc2626; --yellow:#d97706;
+}
+/* original dark theme */
+:root.dark-theme-fallback {
+  --bg:#0a0e1a; --surface:#111827; --surface2:#1a2235; --border:#2a3a55;
+  --accent:#00e5ff; --accent2:#ff6b35; --accent3:#a8ff3e;
+  --text:#e8f0fe; --text2:#8899bb;
+  --green:#00c851; --red:#ff4444; --yellow:#ffbb33;
+}
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:'Kanit',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;
   background-image:radial-gradient(ellipse at 20% 20%,rgba(0,229,255,.05) 0%,transparent 50%),
@@ -192,6 +205,11 @@ input[type="range"]{accent-color:var(--accent3);background:transparent;border:no
   .team-badge{padding:4px 8px;font-size:.8rem;}
   .modal-sheet{border-radius:16px 16px 0 0;padding:18px 16px 36px;}
 }
+
+.notice-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center;z-index:3000}
+.notice-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;max-width:420px;width:90%}
+.notice-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:15px}
+
 </style>
 </head>
 <body>
@@ -199,6 +217,9 @@ input[type="range"]{accent-color:var(--accent3);background:transparent;border:no
 <div class="header">
   <h1>🏸 Badminton Queue</h1>
   <p>จัดคิว • จับทีม • บันทึกผล</p>
+<div style="margin-top:10px;">
+<button class="btn btn-ghost" onclick="toggleTheme()">🎨 เปลี่ยนธีม</button>
+</div>
 </div>
 
 <div class="tab-nav">
@@ -411,6 +432,209 @@ input[type="range"]{accent-color:var(--accent3);background:transparent;border:no
 </div>
 
 <script>
+
+
+const THEMES=[
+
+// 1. Original Dark
+{
+name:'original-dark',
+bg:'#0a0e1a',
+surface:'#111827',
+surface2:'#1a2235',
+border:'#2a3a55',
+accent:'#00e5ff',
+accent2:'#ff6b35',
+accent3:'#a8ff3e',
+text:'#e8f0fe',
+text2:'#8899bb'
+},
+
+// 2. Light Minimal
+{
+name:'light-minimal',
+bg:'#f5f7fb',
+surface:'#ffffff',
+surface2:'#eef2f7',
+border:'#d6deea',
+accent:'#0077ff',
+accent2:'#ff6b35',
+accent3:'#16a34a',
+text:'#1f2937',
+text2:'#6b7280'
+},
+
+// 3. Reading Nook
+{
+name:'reading-nook',
+bg:'#F4F2EE',
+surface:'#FFFFFF',
+surface2:'#E7ECE9',
+border:'#C9D3CE',
+accent:'#7E9595',
+accent2:'#E8BFA0',
+accent3:'#AFC9BF',
+text:'#425252',
+text2:'#8A9898'
+},
+
+// 4. Pencil Sketch
+{
+name:'pencil-sketch',
+bg:'#F7F2EC',
+surface:'#FFFFFF',
+surface2:'#E6D4C5',
+border:'#D2C0B2',
+accent:'#9E595B',
+accent2:'#F0C486',
+accent3:'#B8C8BE',
+text:'#574A42',
+text2:'#9B8E84'
+},
+
+// 5. Modern Barn
+{
+name:'modern-barn',
+bg:'#F3F0EB',
+surface:'#FFFFFF',
+surface2:'#AAB7AE',
+border:'#D0C2AA',
+accent:'#5C6E6C',
+accent2:'#C17A54',
+accent3:'#D2A96A',
+text:'#374240',
+text2:'#7C8683'
+},
+
+// 6. Fore Garden
+{
+name:'fore-garden',
+bg:'#F8F3EF',
+surface:'#FFFFFF',
+surface2:'#AFC8B0',
+border:'#D4D7A6',
+accent:'#B78476',
+accent2:'#E9B7A6',
+accent3:'#6D7F6D',
+text:'#4A4A44',
+text2:'#8B8882'
+},
+
+// 7. Moon Spirit
+{
+name:'moon-spirit',
+bg:'#F5F5F3',
+surface:'#FFFFFF',
+surface2:'#C5D4D6',
+border:'#D0B273',
+accent:'#0E3A52',
+accent2:'#6F8B9B',
+accent3:'#D0B273',
+text:'#23313A',
+text2:'#7A848A'
+},
+
+// 8. Cozy Cottage
+{
+name:'cozy-cottage',
+bg:'#F6F2EA',
+surface:'#FFFFFF',
+surface2:'#D2C7DC',
+border:'#8A8B5D',
+accent:'#7B7B50',
+accent2:'#E7A3A0',
+accent3:'#AFC2D0',
+text:'#434234',
+text2:'#8B8A79'
+},
+
+// 9. Air Temple
+{
+name:'air-temple',
+bg:'#F3F8FA',
+surface:'#FFFFFF',
+surface2:'#BFD8E6',
+border:'#E0B462',
+accent:'#355962',
+accent2:'#ED817B',
+accent3:'#8DADBA',
+text:'#28444C',
+text2:'#78919B'
+},
+
+// 10. Luna Rose
+{
+name:'luna-rose',
+bg:'#F8F6F4',
+surface:'#FFFFFF',
+surface2:'#EFD8D8',
+border:'#C1C6BE',
+accent:'#4A2B23',
+accent2:'#D0A1A6',
+accent3:'#C1C6BE',
+text:'#3E322E',
+text2:'#8F8480'
+}
+
+];
+
+function applyTheme(idx){
+ const t=THEMES[idx];
+ const r=document.documentElement;
+ r.style.setProperty('--bg',t.bg);
+ r.style.setProperty('--surface',t.surface);
+ r.style.setProperty('--surface2',t.surface2);
+ r.style.setProperty('--border',t.border);
+ r.style.setProperty('--accent',t.accent);
+ r.style.setProperty('--accent2',t.accent2);
+ r.style.setProperty('--accent3',t.accent3);
+ r.style.setProperty('--text',t.text);
+ r.style.setProperty('--text2',t.text2);
+ localStorage.setItem('badminton_theme_idx',idx);
+}
+
+function toggleTheme(){
+ let idx=parseInt(localStorage.getItem('badminton_theme_idx')||'-1');
+ idx=(idx+1)%THEMES.length;
+ applyTheme(idx);
+}
+
+(function(){
+ let idx=parseInt(localStorage.getItem('badminton_theme_idx')||'0');
+ applyTheme(idx);
+})();
+
+
+
+// ===== Custom Alert/Confirm =====
+function showAppModal(msg,isConfirm){
+ return new Promise(resolve=>{
+   const m=document.getElementById('noticeModal');
+   document.getElementById('noticeText').textContent=msg;
+   const a=document.getElementById('noticeActions');
+   a.innerHTML='';
+   if(isConfirm){
+      a.innerHTML='<button class="btn btn-ghost" id="nNo">ยกเลิก</button><button class="btn btn-primary" id="nYes">ตกลง</button>';
+      document.getElementById('nNo').onclick=()=>{m.style.display='none';resolve(false);};
+      document.getElementById('nYes').onclick=()=>{m.style.display='none';resolve(true);};
+   }else{
+      a.innerHTML='<button class="btn btn-primary" id="nOk">ตกลง</button>';
+      document.getElementById('nOk').onclick=()=>{m.style.display='none';resolve(true);};
+   }
+   m.style.display='flex';
+ });
+}
+window.alert=(msg)=>showAppModal(msg,false);
+window.confirm=(msg)=>showAppModal(msg,true);
+
+// กันค่าติดลบทุก input number
+document.addEventListener('input',function(e){
+ if(e.target.type==='number'){
+   let v=e.target.value;
+   if(v!=='' && Number(v)<0) e.target.value=0;
+ }
+},true);
+
 // ============================================================
 // DATA
 // ============================================================
@@ -929,7 +1153,7 @@ function modalUpdateScore(s, side, val){
   if(!modalState) return;
   const m = modalState.match;
   if(!m.setScores[s]) m.setScores[s]={a:'',b:''};
-  if(side==='A') m.setScores[s].a=val; else m.setScores[s].b=val;
+  val=(val===''?'':Math.max(0,parseInt(val)||0)); if(side==='A') m.setScores[s].a=val; else m.setScores[s].b=val;
   const [aLabel,bLabel] = getModalLabels();
   refreshSetHint(m, s, aLabel, bLabel);
   updateModalTally(m, [aLabel,bLabel]);
@@ -1047,17 +1271,19 @@ function finishMatch(id, mode){
 }
 
 function clearRandomMatches(){
-if(!confirm('ล้างแมทช์ทั้งหมด ?')) return;
+showAppModal('ล้างแมทช์ทั้งหมด ?',true).then(ok=>{ if(!ok) return;
 randomMatches=[];randomTeams=[];
 document.getElementById('teamPreview').innerHTML='';
 renderRandomMatches();
 renderStats();
+});
 }
 function clearFixMatches(){
-if(!confirm('ล้างแมทช์ทั้งหมด ?')) return;
+showAppModal('ล้างแมทช์ทั้งหมด ?',true).then(ok=>{ if(!ok) return;
 fixMatches=[];
 renderFixMatches();
 renderStats();
+});
 }
 
 // ============================================================
@@ -1433,6 +1659,14 @@ function deleteCurrentMatch(){
  });
 }
 </script>
+
+
+<div id="noticeModal" class="notice-overlay">
+  <div class="notice-box">
+    <div id="noticeText"></div>
+    <div class="notice-actions" id="noticeActions"></div>
+  </div>
+</div>
 
 </body>
 </html>
