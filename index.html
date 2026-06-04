@@ -1385,5 +1385,54 @@ function deleteCurrentMatch(){
 }
 
 </script>
+
+<div id="confirmModal" class="modal-overlay" style="display:none;">
+  <div class="modal-sheet" style="max-width:420px;border-radius:20px;margin:auto;">
+    <div class="modal-title">⚠️ ยืนยันการดำเนินการ</div>
+    <div id="confirmText" style="color:var(--text2);margin:15px 0 25px 0;line-height:1.6;"></div>
+    <div style="display:flex;gap:10px;">
+      <button class="btn btn-ghost" style="flex:1" onclick="closeConfirmModal()">ยกเลิก</button>
+      <button class="btn btn-danger" style="flex:1" id="confirmOkBtn">ยืนยัน</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let confirmCallback=null;
+function showConfirmModal(message,callback){
+ document.getElementById('confirmText').innerHTML=message;
+ confirmCallback=callback;
+ document.getElementById('confirmModal').style.display='flex';
+}
+function closeConfirmModal(){document.getElementById('confirmModal').style.display='none';}
+setTimeout(function(){
+ const b=document.getElementById('confirmOkBtn');
+ if(b) b.onclick=function(){ if(confirmCallback) confirmCallback(); closeConfirmModal(); };
+},100);
+
+function clearRandomMatches(){
+ showConfirmModal('ล้างแมทช์ทั้งหมดของหน้า Random ?',function(){
+   randomMatches=[];randomTeams=[];
+   document.getElementById('teamPreview').innerHTML='';
+   renderRandomMatches();renderStats();
+ });
+}
+function clearFixMatches(){
+ showConfirmModal('ล้างแมทช์ทั้งหมดของหน้า Fix Team ?',function(){
+   fixMatches=[];renderFixMatches();renderStats();
+ });
+}
+function deleteCurrentMatch(){
+ if(!modalState) return;
+ showConfirmModal('ต้องการลบแมทช์นี้ใช่หรือไม่?<br>สถิติจะถูกคำนวณใหม่',function(){
+   const mode=modalState.mode, matchId=modalState.matchId;
+   if(mode==='random'){randomMatches=randomMatches.filter(m=>m.id!==matchId);renderRandomMatches();}
+   else if(mode==='fix'){fixMatches=fixMatches.filter(m=>m.id!==matchId);renderFixMatches();}
+   else if(typeof customMatches!=='undefined'){customMatches=customMatches.filter(m=>m.id!==matchId);renderCustomMatches();}
+   renderStats(); closeModal();
+ });
+}
+</script>
+
 </body>
 </html>
